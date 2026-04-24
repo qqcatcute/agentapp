@@ -3,7 +3,7 @@ name: "Publish Release"
 on:
   push:
     tags:
-      - 'v*' # 当你推送以 v 开头的标签时触发，如 v1.0.0
+      - "v*"
 
 jobs:
   publish-tauri:
@@ -13,9 +13,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-latest" # 借用苹果电脑
-            args: "--target universal-apple-darwin" # 同时打出 Intel 和 M 系列芯片的包
-          - platform: "windows-latest" # 借用 Windows 电脑
+          - platform: "macos-latest"
+            # 修改点 1：去掉复杂的 universal 目标，先打出基础包
+            args: ""
+          - platform: "windows-latest"
             args: ""
 
     runs-on: ${{ matrix.platform }}
@@ -29,6 +30,9 @@ jobs:
 
       - name: install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          # 修改点 2：显式添加 Mac 所需的两个目标，确保万无一失
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install frontend dependencies
         run: npm install
@@ -37,7 +41,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: app-v__VERSION__ # 自动替换 package.json 里的版本号
+          tagName: v__VERSION__
           releaseName: "Agent App v__VERSION__"
           releaseBody: "自动生成的跨平台版本。"
           args: ${{ matrix.args }}

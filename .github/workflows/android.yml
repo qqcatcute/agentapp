@@ -3,7 +3,7 @@ name: "Build Android APK"
 on:
   push:
     tags:
-      - 'v*' # 依然是监听打标签动作
+      - "v*" # 依然是监听打标签动作
 
 jobs:
   build-android:
@@ -18,13 +18,13 @@ jobs:
       - name: 配置 Node 环境
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: 配置 Java 环境 (Android 打包必需)
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '17'
+          distribution: "zulu"
+          java-version: "17"
 
       - name: 安装前端依赖
         run: npm install

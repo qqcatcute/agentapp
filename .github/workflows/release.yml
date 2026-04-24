@@ -1,0 +1,43 @@
+name: "Publish Release"
+
+on:
+  push:
+    tags:
+      - 'v*' # 当你推送以 v 开头的标签时触发，如 v1.0.0
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest" # 借用苹果电脑
+            args: "--target universal-apple-darwin" # 同时打出 Intel 和 M 系列芯片的包
+          - platform: "windows-latest" # 借用 Windows 电脑
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install frontend dependencies
+        run: npm install
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: app-v__VERSION__ # 自动替换 package.json 里的版本号
+          releaseName: "Agent App v__VERSION__"
+          releaseBody: "自动生成的跨平台版本。"
+          args: ${{ matrix.args }}
